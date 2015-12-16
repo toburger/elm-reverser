@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>||</title>
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/css/foundation.min.css"></link>
+		<style>
+			body {
+				margin: 32px;
+			}
+		</style>
+		<script src="dist/main.min.js"></script>
+	</head>
+	<body>
+		<div class="row" id="elm"></div>
+		<script>
+			var defaultValues = {
+				dispatchReset: [],
+				dispatchAddColorMapping: ["", ""]
+			};
+			var app = Elm.embed(Elm.App.Main, document.getElementById('elm'), defaultValues);
+			app.ports.reversedText.subscribe(function(text) { document.title = '|' + text + '|'; });
+			window.ports = app.ports;
+		</script>
+	</body>
+</html>
