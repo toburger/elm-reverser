@@ -1,4 +1,4 @@
-module App.Main where
+module App.Main (..) where
 
 import Html exposing (Html, Attribute, div, span, button, input, text, hr, h4, dl, dt, dd, label, fieldset, h5)
 import Html.Attributes exposing (style, type', value, class, disabled, classList)
@@ -10,15 +10,18 @@ import Signal exposing (Signal, Address)
 import StartApp
 import Task
 import String
-import Debug
 
 
+-- import Debug
 ---- MODEL ----
 
-type alias Color = String
+
+type alias Color =
+  String
 
 
-type alias ColorMappings = Dict Char Color
+type alias ColorMappings =
+  Dict Char Color
 
 
 type alias Model =
@@ -34,23 +37,25 @@ initialModel : Model
 initialModel =
   { text = ""
   , reversedText = ""
-  , colorMappings = Dict.fromList [('a', "red"), ('b', "blue")]
+  , colorMappings = Dict.fromList [ ( 'a', "red" ), ( 'b', "blue" ) ]
   , selectedChar = Nothing
   , selectedColor = ""
   }
 
 
+
 ---- UPDATE ----
+
 
 type Action
   = UpdateText String
   | Reset
   | UpdateSelectedChar Char
   | UpdateSelectedColor String
-  | AddColorMapping (Maybe Char, String)
+  | AddColorMapping ( Maybe Char, String )
 
 
-update: Action -> Model -> Model
+update : Action -> Model -> Model
 update action model =
   case action of
     UpdateText text ->
@@ -71,15 +76,16 @@ update action model =
     UpdateSelectedColor color ->
       { model | selectedColor = color }
 
-    AddColorMapping (Just char, color) ->
-        { model
-          | colorMappings = Dict.insert char color model.colorMappings
-          , selectedChar = Nothing
-          , selectedColor = ""
-        }
-        
+    AddColorMapping ( Just char, color ) ->
+      { model
+        | colorMappings = Dict.insert char color model.colorMappings
+        , selectedChar = Nothing
+        , selectedColor = ""
+      }
+
     AddColorMapping _ ->
       model
+
 
 
 ---- VIEW ----
@@ -94,12 +100,15 @@ stringView : ColorMappings -> String -> Html
 stringView mapping txt =
   txt
     |> String.toList
-    |> List.map (\c ->
-      span
-        (textStyle mapping c
-            |> Maybe.map (\c -> [c])
-            |> Maybe.withDefault [])
-        [ text (String.fromChar c) ])
+    |> List.map
+        (\c ->
+          span
+            (textStyle mapping c
+              |> Maybe.map (\c -> [ c ])
+              |> Maybe.withDefault []
+            )
+            [ text (String.fromChar c) ]
+        )
     |> div []
 
 
@@ -107,9 +116,12 @@ firstChar : String -> Char
 firstChar s =
   s
     -- |> Debug.log "chars"
-    |> String.toList
-    |> List.head
-    |> Maybe.withDefault ' '
+    |>
+      String.toList
+    |>
+      List.head
+    |>
+      Maybe.withDefault ' '
 
 
 addColorMappingView : Address Action -> Maybe Char -> String -> Html
@@ -117,80 +129,90 @@ addColorMappingView address selectedChar selectedColor =
   let
     cannotAdd =
       selectedColor == "" || selectedChar == Nothing
+
     charOrEmpty =
       selectedChar
         |> Maybe.map String.fromChar
         |> Maybe.withDefault ""
   in
-    fieldset [ class "fieldset" ]
-      [ label []
-        [ text "char"
-        , input
-          [ type' "text"
-          , onInput address (UpdateSelectedChar << firstChar)
-          , value charOrEmpty
-          ] []
-        ]
-      , label []
-        [ text "color"
-        , input
-          [ type' "text"
-          , onInput address UpdateSelectedColor
-          , value selectedColor
-          ] []
-        ]
-      , button
-        [ disabled cannotAdd
-        , onClick address (AddColorMapping (selectedChar, selectedColor))
-        , classList
-          [ ("button", True)
-          , ("expanded", True)
-          , ("disabled", cannotAdd)
+    fieldset
+      [ class "fieldset" ]
+      [ label
+          []
+          [ text "char"
+          , input
+              [ type' "text"
+              , onInput address (UpdateSelectedChar << firstChar)
+              , value charOrEmpty
+              ]
+              []
           ]
-        ]
-        [ text "add" ]
+      , label
+          []
+          [ text "color"
+          , input
+              [ type' "text"
+              , onInput address UpdateSelectedColor
+              , value selectedColor
+              ]
+              []
+          ]
+      , button
+          [ disabled cannotAdd
+          , onClick address (AddColorMapping ( selectedChar, selectedColor ))
+          , classList
+              [ ( "button", True )
+              , ( "expanded", True )
+              , ( "disabled", cannotAdd )
+              ]
+          ]
+          [ text "add" ]
       ]
 
 
 colorMappingsView : ColorMappings -> Html
 colorMappingsView colorMappings =
-  dl []
+  dl
+    []
     (Dict.toList colorMappings
-      |> List.concatMap (\(k, v) ->
-        [ dt [] [ text (String.fromChar k) ]
-        , dd [ style [("color", v)] ] [ text v ]
-        ]
-      )
+      |> List.concatMap
+          (\( k, v ) ->
+            [ dt [] [ text (String.fromChar k) ]
+            , dd [ style [ ( "color", v ) ] ] [ text v ]
+            ]
+          )
     )
 
 
 textInput : Address Action -> String -> Html
 textInput address text =
-  fieldset [ class "fieldset" ]
+  fieldset
+    [ class "fieldset" ]
     [ input
-      [ type' "text"
-      , value text
-      , onInput address UpdateText
-      ]
-      []
-    , button
-      [ onClick address Reset
-      , disabled (text == "")
-      , classList
-        [ ("button", True)
-        , ("expanded", True)
-        , ("warning", True)
-        , ("disabled", text == "")
+        [ type' "text"
+        , value text
+        , onInput address UpdateText
         ]
-      ]
-      [ Html.text "reset"
-      ]
+        []
+    , button
+        [ onClick address Reset
+        , disabled (text == "")
+        , classList
+            [ ( "button", True )
+            , ( "expanded", True )
+            , ( "warning", True )
+            , ( "disabled", text == "" )
+            ]
+        ]
+        [ Html.text "reset"
+        ]
     ]
 
 
 view : Address Action -> Model -> Html
 view address { text, reversedText, colorMappings, selectedChar, selectedColor } =
-  div [ class "medium-6 medium-centered large-4 large-centered columns" ]
+  div
+    [ class "medium-6 medium-centered large-4 large-centered columns" ]
     [ lazy (textInput address) text
     , hr [] []
     , h5 [] [ Html.text "output:" ]
@@ -204,50 +226,50 @@ view address { text, reversedText, colorMappings, selectedChar, selectedColor } 
 
 textStyle : ColorMappings -> Char -> Maybe Attribute
 textStyle mapping c =
-    mapping
-      |> Dict.get c
-      -- |> Debug.log "color"
-      |> Maybe.map (\c -> style [("color", c)])
+  mapping
+    |> Dict.get c
+    |> Maybe.map (\c -> style [ ( "color", c ) ])
 
 
 actions : List (Signal Action)
 actions =
   [ Signal.map (always Reset) dispatchReset
   , dispatchAddColorMapping
-    |> Signal.map (\(charString, color) ->
-      let
-        char =
-          if firstChar charString /= ' '
-            then Just (firstChar charString)
-            else Nothing
-      in
-        AddColorMapping (char, color))
+      |> Signal.map
+          (\( charString, color ) ->
+            let
+              char =
+                if firstChar charString /= ' ' then
+                  Just (firstChar charString)
+                else
+                  Nothing
+            in
+              AddColorMapping ( char, color )
+          )
   ]
 
 
 app : StartApp.App Model
 app =
   StartApp.start
-    { init = (initialModel, Effects.none)
-    , update = (\action model -> (update action model, Effects.none))
+    { init = ( initialModel, Effects.none )
+    , update = (\action model -> ( update action model, Effects.none ))
     , view = view
     , inputs = actions
     }
 
 
 main : Signal Html
-main = app.html
+main =
+  app.html
 
 
 port dispatchReset : Signal ()
-
-
-port dispatchAddColorMapping : Signal (String, String)
-
-
+port dispatchAddColorMapping : Signal ( String, String )
 port tasks : Signal (Task.Task Never ())
 port tasks =
   app.tasks
+
 
 
 -- port text  : Signal String
@@ -259,4 +281,7 @@ port reversedText =
   app.model
     |> Signal.map .reversedText
     |> Signal.dropRepeats
-    -- |> Signal.map (Debug.log "reversedText")
+
+
+
+-- |> Signal.map (Debug.log "reversedText")
